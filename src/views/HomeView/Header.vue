@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { subpagePrefixPath, subpageRoutes } from '@/router'
-import { defineProps, defineEmits, reactive, watch, ref } from 'vue'
-import { useRoute, type RouteRecordRaw } from 'vue-router'
+import { defineProps, defineEmits, watch, ref } from 'vue'
+import { useRoute, useRouter, type RouteRecordRaw } from 'vue-router'
 
 type TabType = {
   path: string
@@ -42,21 +42,19 @@ watch(route, (to) => {
   activePath.value = to.path
 })
 
+activePath.value = route.path
+
 const emit = defineEmits<{
-  (event: 'onActive', message: number): void
-  (event: 'onClose', message: number): void
+  (event: 'onActive', message: string): void
+  (event: 'onClose', message: string): void
 }>()
 
 const onCloseTab = (path: string) => {
-  throw new Error('Not implemented')
-  // const index = props.tabs.findIndex((tab) => tab.path === path)
-  // emit('onClose', index)
+  emit('onClose', path)
 }
 
 const onActive = (path: string) => {
-  throw new Error('Not implemented')
-  // const index = props.tabs.findIndex((tab) => tab.path === path)
-  // emit('onActive', index)
+  emit('onActive', path)
 }
 </script>
 
@@ -71,7 +69,7 @@ const onActive = (path: string) => {
       <div>
         {{ tab.name }}
       </div>
-      <div class="close" @click="onCloseTab(tab.path)">X</div>
+      <div class="close" @click.stop="onCloseTab(tab.path)">X</div>
     </div>
   </header>
 </template>
