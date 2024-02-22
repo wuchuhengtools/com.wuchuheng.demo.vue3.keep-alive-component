@@ -1,16 +1,45 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
-import type { TabType } from './Index.vue'
+import { subpagePrefixPath, subpageRoutes } from '@/router'
+import { defineProps, defineEmits, reactive, watch, ref } from 'vue'
+import { useRoute, type RouteRecordRaw } from 'vue-router'
+
+type TabType = {
+  path: string
+  name: string
+}
 
 const props = defineProps({
-  tabs: {
-    type: Array as () => TabType[],
-    required: true
-  },
-  activeIndex: {
-    type: Number,
+  opendedPathList: {
+    type: Array as () => string[],
     required: true
   }
+})
+
+const tabs = ref<TabType[]>([])
+const pathMapRoute: Map<string, RouteRecordRaw> = new Map()
+subpageRoutes.forEach((route) => pathMapRoute.set(`${subpagePrefixPath}${route.path}`, route))
+
+watch(
+  () => props.opendedPathList,
+  (opendedPathList) => {
+    console.log('opendedPathList', opendedPathList)
+    const newTabs: TabType[] = []
+    opendedPathList.forEach((path) => {
+      if (pathMapRoute.has(path)) {
+        const route = pathMapRoute.get(path)!
+        newTabs.push({ path, name: route.name as string })
+      }
+      tabs.value = newTabs
+    })
+  },
+  { immediate: true }
+)
+
+// Listen the router change, and then get the new path to set the active tab.
+const activePath = ref('')
+const route = useRoute()
+watch(route, (to) => {
+  activePath.value = to.path
 })
 
 const emit = defineEmits<{
@@ -19,23 +48,25 @@ const emit = defineEmits<{
 }>()
 
 const onCloseTab = (path: string) => {
-  const index = props.tabs.findIndex((tab) => tab.path === path)
-  emit('onClose', index)
+  throw new Error('Not implemented')
+  // const index = props.tabs.findIndex((tab) => tab.path === path)
+  // emit('onClose', index)
 }
 
 const onActive = (path: string) => {
-  const index = props.tabs.findIndex((tab) => tab.path === path)
-  emit('onActive', index)
+  throw new Error('Not implemented')
+  // const index = props.tabs.findIndex((tab) => tab.path === path)
+  // emit('onActive', index)
 }
 </script>
 
 <template>
   <header>
     <div
-      v-for="tab in props.tabs"
+      v-for="tab in tabs"
       :key="tab.path"
       @click="onActive(tab.path)"
-      :class="['tab', { active: props.activeIndex === props.tabs.indexOf(tab) }]"
+      :class="['tab', { active: tab.path === activePath }]"
     >
       <div>
         {{ tab.name }}
